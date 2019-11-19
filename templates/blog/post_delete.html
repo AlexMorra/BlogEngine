@@ -1,0 +1,10 @@
+{% extends '_base.html' %}
+
+{% block content %}
+    <h1>Delete post</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>Are you sure you want to delete "{{ post.title }}"?</p>
+        <input type="submit" value="Confirm" class="btn btn-danger">
+    </form>
+{% endblock content %}

@@ -1,0 +1,110 @@
+{% extends '_base.html' %}
+{% load blog_tags %}
+{% load static %}
+
+{% block menu %}
+    {% if post.author == request.user %}
+    <a href="{% url 'post_delete' slug=post.slug %}"><button class="btn btn-danger form-control mt-1">Delete</button></a>
+    <a href="{% url 'post_update' slug=post.slug %}"><button class="btn btn-warning form-control mt-1">Update</button></a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <h1 class="mt-4">{{ post.title }}</h1>
+    <p class="lead">
+        by
+        <a href="{% url 'profile' pk=post.author.id %}">{{ post.author.username }}</a>
+    </p>
+    <hr>
+    <p>{{ post.created_at }}</p>
+    <hr>
+    {% if post.image %}
+    <img class="card-img-top" src="{{ post.image.url }}" alt="">
+    {% endif %}
+    <hr>
+    <p>{{ post.text }}</p>
+
+                                        {# like/dislike config #}
+    <div class="container">
+        <span style="float: right">
+            <span class="block-like mr-2" data-id="{{ post.id }}" data-type="post" data-action="like" title="like">
+                <img class="thumbs" src="{% static 'images/positive-vote.svg' %}"
+                {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                <span data-count="like" {% if post.votes.likes.all|user_in:user %}class="like_num"{% endif %}>
+                    {{ post.votes.likes.count }}</span>
+            </span>
+            <span data-id="{{ post.id }}" data-type="post" data-action="dislike" title="dislike">
+                <img class="thumbs" src="{% static 'images/negative-vote.svg' %}"
+                {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                <span data-count="dislike" {% if post.votes.dislikes.all|user_in:user %}class="dislike_num"{% endif %}>
+                    {{ post.votes.dislikes.count }}</span>
+            </span>
+        </span>
+    </div>
+    <br>
+    <!-- Comments Form -->
+    {% if user.is_authenticated %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.author.as_hidden }}
+        {{ form.post.as_hidden }}
+        <div class="card my-4">
+            <h5 class="card-header">Leave a Comment:</h5>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        {{ form.text }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </form>
+    {% else %}
+        <br>
+        <div class="alert alert-info" role="alert">
+            To leave a comment, you must register or login.
+        </div>
+        <br>
+    {% endif %}
+
+    <!-- Single Comment -->
+     <p id="comment_anchor"></p>
+    {% for comment in post.comments.all %}
+        <div class="media mb-4">
+
+        {% if comment.author.avatar %}
+            <img class="d-flex mr-3 rounded-circle avatar" src="{{ comment.author.avatar.url }}" alt="">
+        {% else %}
+            <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+        {% endif %}
+
+            <div class="media-body media-header">
+                <div class="mt-0">
+                    <a class="comment-author" href="{% url 'profile' pk=comment.author.id %}">{{ comment.author.username }}</a>
+
+                                                {# like/dislike config #}
+                    <span style="float: right">
+                        <span class="block-like mr-2" data-id="{{ comment.id }}" data-type="comment" data-action="like" title="like">
+                            <img class="thumbs-comment" src="{% static 'images/positive-vote.svg' %}"
+                            {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                            <span data-count="like" {% if comment.votes.likes.all|user_in:user %}class="like_num"{% endif %}>
+                                {{ comment.votes.likes.count }}</span>
+                        </span>
+                        <span data-id="{{ comment.id }}" data-type="comment" data-action="dislike" title="dislike">
+                            <img class="thumbs-comment" src="{% static 'images/negative-vote.svg' %}"
+                            {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                            <span data-count="dislike" {% if comment.votes.dislikes.all|user_in:user %}class="dislike_num"{% endif %}>
+                                {{ comment.votes.dislikes.count }}</span>
+                        </span>
+                     </span>
+                </div>
+                {{ comment.text }}
+                <br>
+            <span class="comment-time">{{ comment.created_at }}</span>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,5 @@
+<ul class="list-group list-group-flush">
+    {% for post in latest_posts %}
+        <li class="list-group-item"><a class="text-info" href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+    {% endfor %}
+</ul>

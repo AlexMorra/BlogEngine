@@ -1,0 +1,55 @@
+{% extends '_base.html' %}
+{% load static %}
+{% load blog_tags %}
+
+{% block content %}
+
+    {% for post in posts %}
+        <div class="card mb-4">
+
+            {% if post.image %}
+                <img class="card-img-top" src="{{ post.image.url }}" alt="Card image cap">
+            {% endif %}
+
+            <div class="card-body">
+                <h2 class="card-title">{{ post.title }}</h2>
+                <p class="card-text">{{ post.text|truncatechars:500 }}</p>
+                <a href="{{ post.get_absolute_url }}" class="btn btn-primary">Read More &rarr;</a>
+            </div>
+
+            <div class="card-footer text-muted">
+                {{ post.created_at }}
+                <a href="{% url 'profile' pk=post.author.id %}">{{ post.author.username }}</a>
+                Tags: {% for tag in post.tags.all %} <span class="tag"><a href=" {% url "post_list" tag %}">
+                    {{ tag }}
+                </a></span>{% endfor %}
+                <br>
+                {# comments #}
+                <div>
+                <span class="comment">
+                    <a href="{% url 'post_detail' slug=post.slug %}#comment_anchor">
+                    <img src="{% static 'images/chat.svg' %}"></a>
+                    {{ post.comments.count }}
+                </span>
+                {# like/dislike config #}
+                    <span class="block-like"  data-id="{{ post.id }}" data-type="post" data-action="like" title="like">
+                      <img class="thumbs" src="{% static 'images/positive-vote.svg' %}"
+                        {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                      <span data-count="like" {% if post.votes.likes.all|user_in:user %}style="color: green"{% endif %}>
+                          {{ post.votes.likes.count }}</span>
+                  </span>
+                    <span class="block-dislike" data-id="{{ post.id }}" data-type="post" data-action="dislike" title="dislike">
+                      <img class="thumbs" src="{% static 'images/negative-vote.svg' %}"
+                      {% if not user.is_authenticated %} onclick="showmsg()" {% endif %}>
+                      <span data-count="dislike" {% if post.votes.dislikes.all|user_in:user %}style="color: red"{% endif %}>
+                          {{ post.votes.dislikes.count }}</span>
+                  </span>
+                </div>
+                <br>
+
+            </div>
+        </div>
+
+    {% endfor %}
+
+{% endblock %}
